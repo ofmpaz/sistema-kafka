@@ -23,7 +23,7 @@ public class UserService {
         UserEntity entity = new UserEntity();
         entity.setNome(userDTO.nome());
         entity.setEmail(userDTO.email());
-        UserEntity usuarioSalvo = userRepository.save(entity);
-        streamBridge.send("notificacao-out", userDTO);
+        UserEntity usuarioSalvo = userRepository.saveAndFlush(entity);
+        streamBridge.send("notificacao-out", usuarioSalvo);
     }
 }
