@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: sistema-kafka
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  docker:
+    compose:
+      file: compose.yaml
+  cloud:
+    stream:
+      bindings:
+        notificacao-out:
+          destination: registro-usuarios-topic
+        cosumirNotificacao-in-0:
+          destination: registro-usuarios-topic
+          group: notificacao-group
+  h2:
+    console:
+      enabled: true
