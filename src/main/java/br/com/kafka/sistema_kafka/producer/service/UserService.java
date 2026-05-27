@@ -1,9 +1,10 @@
 package br.com.kafka.sistema_kafka.producer.service;
 
+import br.com.kafka.sistema_kafka.producer.dto.request.UserDTO;
+import br.com.kafka.sistema_kafka.producer.dto.response.UserResponseDTO;
 import br.com.kafka.sistema_kafka.producer.model.UserEntity;
-import br.com.kafka.sistema_kafka.producer.dto.UserDTO;
 import br.com.kafka.sistema_kafka.producer.repository.UserRepository;
-import org.springframework.cloud.stream.function.StreamBridge;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,19 +12,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final StreamBridge streamBridge;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public UserService(UserRepository userRepository, StreamBridge streamBridge) {
+    public UserService(UserRepository userRepository, ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
-        this.streamBridge = streamBridge;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
-    public void cadastrarUserEEnviarNotificação(UserDTO userDTO){
-        UserEntity entity = new UserEntity();
-        entity.setNome(userDTO.nome());
-        entity.setEmail(userDTO.email());
-        UserEntity usuarioSalvo = userRepository.saveAndFlush(entity);
-        streamBridge.send("notificacao-out", usuarioSalvo);
+    public UserResponseDTO  cadastrarUserEEnviarNotificacao(UserDTO userDTO){
+        UserEntity entity = userDTO.toEntity();
+        UserEntity usuarioSalvo = userRepository.save(entity);
+        eventPublisher.publishEvent(usuarioSalvo);
+        return UserResponseDTO.fromEntity(usuarioSalvo);
     }
 }

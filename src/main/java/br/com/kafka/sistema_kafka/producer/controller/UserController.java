@@ -1,7 +1,10 @@
 package br.com.kafka.sistema_kafka.producer.controller;
 
-import br.com.kafka.sistema_kafka.producer.dto.UserDTO;
+import br.com.kafka.sistema_kafka.producer.dto.request.UserDTO;
+import br.com.kafka.sistema_kafka.producer.dto.response.UserResponseDTO;
+import br.com.kafka.sistema_kafka.producer.service.UserService;
 import org.springframework.cloud.stream.function.StreamBridge;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,15 +15,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/users/v1")
 public class UserController {
 
-    private final StreamBridge streamBridge;
 
-    public UserController(StreamBridge streamBridge) {
-        this.streamBridge = streamBridge;
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
-    @PostMapping
-    public ResponseEntity<String> cadastrarUsuario(@RequestBody UserDTO usuarioDTO) {
-        streamBridge.send("notificacao-out", usuarioDTO);
-        return ResponseEntity.ok("Cadastro recebido. Evento disparado para o kafka");
+    @PostMapping("/usuario")
+    public ResponseEntity<UserResponseDTO> cadastrarUsuario(@RequestBody UserDTO usuarioDTO) {
+        UserResponseDTO response = userService.cadastrarUserEEnviarNotificacao(usuarioDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
